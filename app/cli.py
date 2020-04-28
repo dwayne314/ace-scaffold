@@ -44,7 +44,8 @@ def create(ctx, name, path, force):
 @click.option('--template', '-t', required=True,
               help='The name of the template to clone.')
 @click.option('--name', '-n', required=False,
-              help='The name of the new directory.')
+              help='The name of the new directory.',
+              default='Untitled')
 @click.option('--path', '-p', required=False,
               default=os.getcwd(), type=click.Path(exists=False, writable=True),
               help='The path to clone the template to.')
@@ -57,7 +58,7 @@ def clone(ctx, name, path, template):
     - If no path is supplied the template is saved to the current working directory.
     """
 
-    click.echo('Cloning Template `{0}` to `{1}`.\n'.format(template, os.path.join(name, path)))
+    click.echo('Cloning Template `{0}` to `{1}`.\n'.format(template, os.path.join(path, name)))
 
 @click.command(short_help="Deletes a template.")
 @click.option('--template', '-t', required=True,
