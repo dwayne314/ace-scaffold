@@ -8,6 +8,8 @@ Attributes:
 import os
 import click
 from app import Config
+from app.utils import get_clone_function
+from app.engines import create_template
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -24,7 +26,7 @@ def interface(ctx):
 @click.option('--path', '-p', required=False,
               default=os.getcwd(), type=click.Path(exists=True, readable=True),
               help='The directory to create the template from.')
-@click.option('--force', '-f', required=False,
+@click.option('--force/--no-force', '-f', default=False,
               help='Overwrite a template if one exists.')
 @click.pass_obj
 def create(ctx, name, path, force):
@@ -37,8 +39,15 @@ def create(ctx, name, path, force):
 
     """
 
-    click.echo('Creating Template `{0}` from `{1}`.\n'.format(name, path))
+    path_function = get_clone_function(path)
+    status = create_template(path, name, path_function, force,
+                             ctx.TEMPLATE_FOLDER)
 
+    if status["isSuccessful"]:
+        click.echo(f'Template `{name}` has been created.\n')
+    else:
+        click.echo(f'Template `{name}` could not be created.\n')
+        click.echo(status["error"])
 
 @click.command(short_help="Clones a template to a directory.")
 @click.option('--template', '-t', required=True,
