@@ -25,8 +25,10 @@ def create_template(src, name, clone_function, force, template_folder):
         clone_function (dict): includes a type (str) and execute (func) to
             call the create the templeate with the correct parameters
         force (bool): if truthy overwrite the existing template if one exists
-        template_folder (class): folder that templates currently live
+        template_folder (str): folder that templates currently live
 
+    Returns:
+        dict: indicates the status, an error if present, and the template name
     """
 
     new_template_dir = os.path.join(template_folder, name) \
@@ -56,17 +58,21 @@ def create_template(src, name, clone_function, force, template_folder):
 def clone_template(dest, name, clone_name, path_function, template_folder):
     """Clones a template
 
-    Clones a template to the specified directory with the specified name.  Then builds the template's leaf node
-    (which is the directory's leaf node for a directory or the file if it's a
-    file) and clones the source directory to the leaf node.
+    Clones a template to the specified directory with the specified name.
+    Then builds the template's leaf node (which is the directory's leaf
+    node for a directory or the file if it's a file) and clones the source
+    directory to the leaf node.
 
     Parameters:
-        dest (str): The path to clone the template to
-        name (str): The name of the template
-        clone_name (str): The name to call the new template
-        path_function (str): A reference to the correct path function to
+        dest (str): the path to clone the template to
+        name (str): the name of the template
+        clone_name (str): the name to call the new template
+        path_function (str): a reference to the correct path function to
             execute.
-        template_folder (class): The path of the templates directory
+        template_folder (str): the path of the templates directory
+
+    Returns:
+        dict: indicates the status, an error if present, and the template name
 
     """
 
@@ -80,4 +86,18 @@ def clone_template(dest, name, clone_name, path_function, template_folder):
             return dict(isSuccessful=False, error=err.message, name=name)
 
     path_function["execute"](template_path, destination_path)
-    return dict(isSuccessful=True, error=None)
+    return dict(isSuccessful=True, error=None, name=name)
+
+def get_templates(template_folder, search_term=''):
+    """Returns all templates filtered by the search term
+
+    Parameters:
+        template_folder (str): the path of the templates directory
+        search_term (str): filters the templates if the the term is present
+
+    Returns:
+        list: represents the filtered templates
+
+    """
+    return [template for template in os.listdir(template_folder)
+            if search_term in template]
