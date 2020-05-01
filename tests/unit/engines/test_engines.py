@@ -91,3 +91,33 @@ def test_create_template_does_not_create_a_directory_if_not_type_file(mocker):
         True, template_folder)
 
     assert os.mkdir.assert_not_called
+
+def test_clone_template_returns_is_successful(mocker):
+    """Successful is returned if the template was cloned"""
+    template_name = 'flask-shell'
+    template_folder = '~/templates'
+    clone_name = 'test'
+
+    mocker.patch('app.engines.get_template', return_value=True)
+
+    create_result = app.engines.clone_template(
+        'dest', template_name, clone_name,
+        {'type': 'file', "execute":lambda src, dest: src},
+        template_folder)
+
+    assert create_result['isSuccessful'] is True
+
+def test_clone_template_returns_is_not_successful(mocker):
+    """isSuccessful is false if the template was cloned"""
+    template_name = 'flask-shell'
+    template_folder = '~/templates'
+    clone_name = 'test'
+
+    mocker.patch('app.engines.get_template', return_value=False)
+
+    create_result = app.engines.clone_template(
+        'dest', template_name, clone_name,
+        {'type': 'file', "execute":lambda src, dest: src},
+        template_folder)
+
+    assert create_result['isSuccessful'] is False

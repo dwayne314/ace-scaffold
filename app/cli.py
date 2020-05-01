@@ -9,7 +9,7 @@ import os
 import click
 from app import Config
 from app.utils import get_clone_function
-from app.engines import create_template
+from app.engines import create_template, clone_template
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -56,7 +56,8 @@ def create(ctx, name, path, force):
               help='The name of the new directory.',
               default='Untitled')
 @click.option('--path', '-p', required=False,
-              default=os.getcwd(), type=click.Path(exists=False, writable=True),
+              default=os.getcwd(),
+              type=click.Path(exists=False, writable=True, file_okay=False),
               help='The path to clone the template to.')
 @click.pass_obj
 def clone(ctx, name, path, template):
@@ -67,7 +68,15 @@ def clone(ctx, name, path, template):
     - If no path is supplied the template is saved to the current working directory.
     """
 
-    click.echo('Cloning Template `{0}` to `{1}`.\n'.format(template, os.path.join(path, name)))
+    path_function = get_clone_function(path)
+    status = clone_template(path, template, name, path_function,
+                            ctx.TEMPLATE_FOLDER)
+    if status["isSuccessful"]:
+        click.echo(f'Template `{template}` has been cloned to `{path}`\n')
+    else:
+        click.echo(f'Template `{template}` could not be cloned to `{path}`\n')
+        click.echo(status["error"])
+
 
 @click.command(short_help="Deletes a template.")
 @click.option('--template', '-t', required=True,
@@ -75,7 +84,7 @@ def clone(ctx, name, path, template):
 @click.pass_obj
 def delete(ctx, template):
     """Deletes the specified template."""
-    click.echo('Deleting Template `{0}`.\n'.format(template))
+    click.echo(f'Deleting Template `{template}`.\n')
 
 
 @click.command(name='list', short_help="Lists all templates.")

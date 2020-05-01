@@ -21,14 +21,17 @@ class InvalidOptionError(ScaffoldError):
     Attributes:
         option_type (str): the type of invalid option error
         template_name (str): the name of the template causing the error
+        path (str): The path to the directory
 
     """
 
-    def __init__(self, option_type, template_name, *args, **kwargs):
+    def __init__(self, option_type=None, template_name=None, path=None, *args, **kwargs):
         super(InvalidOptionError, self).__init__(*args, *kwargs, message=None)
         if option_type == 'template_exists' and template_name:
             self.message = f'Template `{template_name}` exists. Run command with -f ' \
                             'to override.'
+        elif option_type == 'directory_exists' and path:
+            self.message = f'Path `{path}` exists.'
         else:
             self.message = 'An uncaught invalid option error was raised.'
 

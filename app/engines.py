@@ -1,7 +1,12 @@
-"""This module contains all engines the app uses to operate"""
+"""This module contains the engines that the app uses to operate.
+
+- create_template: Creates a new template in the template_folder
+- clone_template: Clones a template to the specified path
+
+"""
 
 import os
-from app.errors import InvalidOptionError
+from app.errors import InvalidOptionError, TemplateNotFoundError
 from app.utils import get_template, delete_template
 
 
@@ -47,3 +52,32 @@ def create_template(src, name, clone_function, force, template_folder):
         clone_function['execute'](src, dest)
 
     return dict(isSuccessful=True, error=None, template_name=name)
+
+def clone_template(dest, name, clone_name, path_function, template_folder):
+    """Clones a template
+
+    Clones a template to the specified directory with the specified name.  Then builds the template's leaf node
+    (which is the directory's leaf node for a directory or the file if it's a
+    file) and clones the source directory to the leaf node.
+
+    Parameters:
+        dest (str): The path to clone the template to
+        name (str): The name of the template
+        clone_name (str): The name to call the new template
+        path_function (str): A reference to the correct path function to
+            execute.
+        template_folder (class): The path of the templates directory
+
+    """
+
+    template_path = os.path.join(template_folder, name)
+    destination_path = os.path.join(dest, clone_name)
+
+    if not get_template(name, template_folder):
+        try:
+            raise TemplateNotFoundError(name)
+        except TemplateNotFoundError as err:
+            return dict(isSuccessful=False, error=err.message, name=name)
+
+    path_function["execute"](template_path, destination_path)
+    return dict(isSuccessful=True, error=None)

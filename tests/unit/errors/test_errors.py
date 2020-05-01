@@ -29,6 +29,16 @@ def test_invalid_option_error_when_template_exists():
         assert err.message == f'Template `{template_name}` exists.' \
                                ' Run command with -f to override.'
 
+def test_invalid_option_error_when_directory_exists():
+    """An InvalidOptionError's "option_type" message uses the provided name"""
+    path = '~/Home'
+    documented_error_option = 'directory_exists'
+    try:
+        raise InvalidOptionError(
+            documented_error_option, 'template_name', path)
+    except ScaffoldError as err:
+        assert err.message == f'Path `{path}` exists.'
+
 def test_invalid_option_error_with_undocumented_option_type():
     """A default error message is used if the option_type is not available"""
     template_name = 'test-template'
