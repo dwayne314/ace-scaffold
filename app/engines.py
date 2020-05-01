@@ -101,3 +101,20 @@ def get_templates(template_folder, search_term=''):
     """
     return [template for template in os.listdir(template_folder)
             if search_term in template]
+
+def remove_template(template_name, template_folder):
+    """Deletes the specified template
+
+    Parameters:
+        template_name (str): The name of the template to delete
+        template_folder (str): the path of the templates directory
+
+    """
+
+    if get_template(template_name, template_folder):
+        delete_template(template_name, template_folder)
+        return dict(isSuccessful=True, error=None, name=template_name)
+    return dict(
+        isSuccessful=False,
+        error=f'Template `{template_name}` could not be deleted',
+        name=template_name)

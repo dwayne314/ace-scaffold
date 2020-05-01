@@ -9,7 +9,8 @@ import os
 import click
 from app import Config
 from app.utils import get_clone_function
-from app.engines import create_template, clone_template, get_templates
+from app.engines import (create_template, clone_template, get_templates,
+                         remove_template)
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -84,7 +85,11 @@ def clone(ctx, name, path, template):
 @click.pass_obj
 def delete(ctx, template):
     """Deletes the specified template."""
-    click.echo(f'Deleting Template `{template}`.\n')
+    status = remove_template(template, ctx.TEMPLATE_FOLDER)
+    if status["isSuccessful"]:
+        click.echo(f'Template `{template}` has been deleted\n')
+    else:
+        click.echo(status["error"])
 
 
 @click.command(name='list', short_help="Lists all templates.")

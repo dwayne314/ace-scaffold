@@ -121,3 +121,15 @@ def test_clone_template_returns_is_not_successful(mocker):
         template_folder)
 
     assert create_result['isSuccessful'] is False
+
+def test_delete_template_returns_is_not_successful(mocker):
+    """isSuccessful is False if the template does not exist"""
+    template_name = 'flask-shell'
+    template_folder = '~/templates'
+
+    mocker.patch('app.engines.get_template', return_value=False)
+    mocker.patch('app.engines.delete_template')
+    create_result = app.engines.remove_template(
+        template_name, template_folder)
+
+    assert create_result['isSuccessful'] is False
