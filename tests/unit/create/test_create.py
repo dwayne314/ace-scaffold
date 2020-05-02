@@ -20,22 +20,11 @@ def test_create_template_without_name(create_template):
 @pytest.mark.command
 @pytest.mark.create
 def test_create_displays_success_message(create_template, mocker):
-    """The success message is sent to the client if the action is a success"""
-    mocker.patch('app.cli.create_template', return_value={'isSuccessful': True})
+    """The message sent to the client from create_template is displayed"""
+    message = 'create display message'
+    mocker.patch('app.cli.create_template', return_value={'msg': message})
     template_name = 'flask-app'
     response = create_template(["-n", template_name])
 
     assert response.exit_code == 0
-    assert f'Template `{template_name}` has been created' in response.output
-
-@pytest.mark.command
-@pytest.mark.create
-def test_create_displays_failure_message(create_template, mocker):
-    """The success message is sent to the client if the action is a success"""
-    mocker.patch('app.cli.create_template', return_value={'isSuccessful': False})
-    template_name = 'flask-app'
-    response = create_template(["-n", template_name])
-
-    assert response.exit_code == 1
-    assert f'Template `{template_name}` could not be ' \
-            'created' in response.output
+    assert message == response.output.strip()

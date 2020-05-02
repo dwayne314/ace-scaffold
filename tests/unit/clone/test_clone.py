@@ -19,23 +19,10 @@ def test_clone_without_template(clone_template):
 
 @pytest.mark.command
 @pytest.mark.clone
-def test_clone_displays_success_message(clone_template, mocker):
-    """The success message is sent to the client if the action is a success"""
-    mocker.patch('app.cli.clone_template', return_value={'isSuccessful': True})
-    template_name = 'flask-app'
+def test_clone_displays_message(clone_template, mocker):
+    """The message sent to the client from clone_template is displayed"""
+    message = 'clone display message'
+    mocker.patch('app.cli.clone_template', return_value={'msg': message})
     response = clone_template(["-t", "flask-app"])
 
-    assert response.exit_code == 0
-    assert f'Template `{template_name}` has been cloned' in response.output
-
-@pytest.mark.command
-@pytest.mark.clone
-def test_clone_displays_failure_message(clone_template, mocker):
-    """The failure message is sent to the client if the action is a failure"""
-    mocker.patch('app.cli.clone_template', return_value={'isSuccessful': False})
-    template_name = 'flask-app'
-    response = clone_template(["-t", "flask-app"])
-
-    assert response.exit_code == 1
-    assert f'Template `{template_name}` could not be ' \
-            'cloned to' in response.output
+    assert message == response.output.strip()

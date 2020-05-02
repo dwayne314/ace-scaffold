@@ -44,11 +44,7 @@ def create(ctx, name, path, force):
     status = create_template(path, name, path_function, force,
                              ctx.TEMPLATE_FOLDER)
 
-    if status["isSuccessful"]:
-        click.echo(f'Template `{name}` has been created.\n')
-    else:
-        click.echo(f'Template `{name}` could not be created.\n')
-        click.echo(status["error"])
+    click.echo(status["msg"])
 
 @click.command(short_help="Clones a template to a directory.")
 @click.option('--template', '-t', required=True,
@@ -72,11 +68,7 @@ def clone(ctx, name, path, template):
     path_function = get_clone_function(path)
     status = clone_template(path, template, name, path_function,
                             ctx.TEMPLATE_FOLDER)
-    if status["isSuccessful"]:
-        click.echo(f'Template `{template}` has been cloned to `{path}`\n')
-    else:
-        click.echo(f'Template `{template}` could not be cloned to `{path}`\n')
-        click.echo(status["error"])
+    click.echo(status["msg"])
 
 @click.command(short_help="Deletes a template.")
 @click.option('--template', '-t', required=True,
@@ -85,10 +77,7 @@ def clone(ctx, name, path, template):
 def delete(ctx, template):
     """Deletes the specified template."""
     status = remove_template(template, ctx.TEMPLATE_FOLDER)
-    if status["isSuccessful"]:
-        click.echo(f'Template `{template}` has been deleted\n')
-    else:
-        click.echo(status["error"])
+    click.echo(status["msg"])
 
 @click.command(name='list', short_help="Lists all templates.")
 @click.option('--filter', '-f', 'filter_', required=False,

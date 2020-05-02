@@ -6,8 +6,8 @@
 """
 
 import os
-from app.errors import InvalidOptionError, TemplateNotFoundError
 from app.utils import get_template, delete_template
+from app.messages import ErrorMessage, InfoMessage
 
 
 def create_template(src, name, clone_function, force, template_folder):
@@ -28,7 +28,8 @@ def create_template(src, name, clone_function, force, template_folder):
         template_folder (str): folder that templates currently live
 
     Returns:
-        dict: indicates the status, an error if present, and the template name
+        dict: indicates the status of the operation and a result message
+
     """
 
     new_template_dir = os.path.join(template_folder, name) \
@@ -39,10 +40,8 @@ def create_template(src, name, clone_function, force, template_folder):
         if force:
             delete_template(name, template_folder)
         else:
-            try:
-                raise InvalidOptionError('template_exists', name)
-            except InvalidOptionError as err:
-                return dict(isSuccessful=False, error=err.message, template_name=name)
+            message = ErrorMessage('template_exists', template_name=name)
+            return dict(isSuccessful=False, msg=message.get_message())
 
     if clone_function['type'] == 'file':
         filename = os.path.basename(src)
@@ -53,7 +52,8 @@ def create_template(src, name, clone_function, force, template_folder):
         dest = os.path.join(new_template_dir, name)
         clone_function['execute'](src, dest)
 
-    return dict(isSuccessful=True, error=None, template_name=name)
+    message = InfoMessage('template_created', template_name=name)
+    return dict(isSuccessful=True, msg=message.get_message())
 
 def clone_template(dest, name, clone_name, path_function, template_folder):
     """Clones a template
@@ -80,13 +80,12 @@ def clone_template(dest, name, clone_name, path_function, template_folder):
     destination_path = os.path.join(dest, clone_name)
 
     if not get_template(name, template_folder):
-        try:
-            raise TemplateNotFoundError(name)
-        except TemplateNotFoundError as err:
-            return dict(isSuccessful=False, error=err.message, name=name)
+        message = ErrorMessage('template_missing', template_name=name)
+        return dict(isSuccessful=False, msg=message.get_message())
 
     path_function["execute"](template_path, destination_path)
-    return dict(isSuccessful=True, error=None, name=name)
+    message = InfoMessage('template_cloned', path=dest, template_name=name)
+    return dict(isSuccessful=True, msg=message.get_message())
 
 def get_templates(template_folder, search_term=''):
     """Returns all templates filtered by the search term
@@ -113,8 +112,8 @@ def remove_template(template_name, template_folder):
 
     if get_template(template_name, template_folder):
         delete_template(template_name, template_folder)
-        return dict(isSuccessful=True, error=None, name=template_name)
-    return dict(
-        isSuccessful=False,
-        error=f'Template `{template_name}` could not be deleted',
-        name=template_name)
+        message = InfoMessage('template_deleted', template_name=template_name)
+        return dict(isSuccessful=True, msg=message.get_message())
+
+    message = ErrorMessage('template_missing', template_name=template_name)
+    return dict(isSuccessful=False, msg=message.get_message())

@@ -3,6 +3,7 @@
 import shutil
 import os
 from app.errors import ScaffoldError, PathNotFoundError
+from app.messages import ErrorMessage
 
 
 def clone_directory(src, dest):
@@ -11,7 +12,6 @@ def clone_directory(src, dest):
         shutil.copytree(src, dest, symlinks=True)
     except OSError as err:
         raise ScaffoldError(err)
-
 
 def clone_file(src, dest):
     """Clones a file from the source to the destination"""
@@ -27,7 +27,6 @@ def delete_template(name, path):
         shutil.rmtree(directory)
     except OSError as err:
         raise ScaffoldError(directory)
-
 
 def get_template(name, path):
     """Retrieves the path of the template.
@@ -49,7 +48,6 @@ def get_template(name, path):
         return template_path
     return False
 
-
 def get_clone_function(path):
     """Returns the clone function and type of a path
 
@@ -57,17 +55,17 @@ def get_clone_function(path):
         path (str): the path to retrieve the clone function for
 
     Returns:
-        (dict): contains the path type and a reference to the appropriate
-            clone function
-
-    Raises:
-        PathNotFoundError (Exception): Thrown with the path if the path is
-            invalid
+        (dict): contains whether the operation was successful, the path type,
+            and a reference to the appropriate clone function
 
     """
 
     if os.path.isfile(path):
-        return {"type": "file", "execute": clone_file}
+        return {'isSuccessful': True, "type": "file", "execute": clone_file}
+
     if os.path.isdir(path):
-        return {"type": "directory", "execute": clone_directory}
-    raise PathNotFoundError(path)
+        return {'isSuccessful': True, 'type': 'directory',
+                'execute': clone_directory}
+
+    message = ErrorMessage('directory_missing', path=path)
+    return {'isSuccessful': False, 'msg':message.get_message()}

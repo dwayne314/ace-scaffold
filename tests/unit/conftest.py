@@ -11,7 +11,7 @@ def click_runner():
 
     The runner mus be called with the command first and the arguments second.
     """
-    config = TestConfig('~/Houses')
+    config = TestConfig('~/Templates')
     runner = CliRunner()
 
     def setup_config(cmd):

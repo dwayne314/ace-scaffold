@@ -34,8 +34,7 @@ def test_create_template_deletes_template_when_instructed(mocker):
         False, template_folder)
 
     assert create_result['isSuccessful'] is False
-    assert f'`{template_name}` exists. Run command with -f to override.'  \
-        in create_result['error']
+
 
 
 def test_create_template_creates_a_directory_if_type_is_file(mocker):
@@ -121,6 +120,29 @@ def test_clone_template_returns_is_not_successful(mocker):
         template_folder)
 
     assert create_result['isSuccessful'] is False
+
+def test_delete_template_returns_is_not_successful(mocker):
+    """isSuccessful is False if the template does not exist"""
+    template_name = 'flask-shell'
+    template_folder = '~/templates'
+
+    mocker.patch('app.engines.get_template', return_value=False)
+    create_result = app.engines.remove_template(
+        template_name, template_folder)
+
+    assert create_result['isSuccessful'] is False
+
+def test_delete_template_returns_is_not_successful(mocker):
+    """isSuccessful is False if the template does not exist"""
+    template_name = 'flask-shell'
+    template_folder = '~/templates'
+
+    mocker.patch('app.engines.get_template', return_value=True)
+    mocker.patch('app.engines.delete_template')
+    create_result = app.engines.remove_template(
+        template_name, template_folder)
+
+    assert create_result['isSuccessful'] is True
 
 def test_delete_template_returns_is_not_successful(mocker):
     """isSuccessful is False if the template does not exist"""
