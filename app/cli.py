@@ -78,7 +78,6 @@ def clone(ctx, name, path, template):
         click.echo(f'Template `{template}` could not be cloned to `{path}`\n')
         click.echo(status["error"])
 
-
 @click.command(short_help="Deletes a template.")
 @click.option('--template', '-t', required=True,
               help='The name of the template to delete.')
@@ -90,7 +89,6 @@ def delete(ctx, template):
         click.echo(f'Template `{template}` has been deleted\n')
     else:
         click.echo(status["error"])
-
 
 @click.command(name='list', short_help="Lists all templates.")
 @click.option('--filter', '-f', 'filter_', required=False,
