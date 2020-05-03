@@ -13,8 +13,8 @@ from app.messages import ErrorMessage, InfoMessage
 def create_template(src, name, clone_function, force, template_folder):
     """Creates a template
 
-    Executes the proper clone_function with the required parameters to cerate
-    a template for a file or a direactory. For directories the contents are
+    Executes the proper clone_function with the scr and dest to create
+    a template for a file or a directory. For directories the contents are
     copied to the new template folder, while files themselves are copied to
     the new template folder. Overwriting an existing template is possible with
     the force (-f) option.
@@ -23,7 +23,7 @@ def create_template(src, name, clone_function, force, template_folder):
         src (str): the path to create the template from
         name (str): the name of the template
         clone_function (dict): includes a type (str) and execute (func) to
-            call the create the templeate with the correct parameters
+            call the create the template with the correct parameters
         force (bool): if truthy overwrite the existing template if one exists
         template_folder (str): folder that templates currently live
 
@@ -32,28 +32,44 @@ def create_template(src, name, clone_function, force, template_folder):
 
     """
 
+    message = None
+    is_successful = None
+    message_kwargs = dict(template_name=name)
+
     new_template_dir = os.path.join(template_folder, name) \
         if clone_function['type'] == 'file' \
         else template_folder
 
     if get_template(name, template_folder):
         if force:
-            delete_template(name, template_folder)
+            delete_status = delete_template(name, template_folder)
+
+            if not delete_status['is_successful']:
+                message = ErrorMessage('delete_template', **message_kwargs)
+                is_successful = False
         else:
-            message = ErrorMessage('template_exists', template_name=name)
-            return dict(isSuccessful=False, msg=message.get_message())
+            message = ErrorMessage('template_exists', **message_kwargs)
+            is_successful = False
 
-    if clone_function['type'] == 'file':
-        filename = os.path.basename(src)
-        dest = os.path.join(new_template_dir, filename)
-        os.mkdir(new_template_dir)
-        clone_function['execute'](src, dest)
-    else:
-        dest = os.path.join(new_template_dir, name)
-        clone_function['execute'](src, dest)
+    if is_successful is not False:
 
-    message = InfoMessage('template_created', template_name=name)
-    return dict(isSuccessful=True, msg=message.get_message())
+        if clone_function['type'] == 'file':
+            filename = os.path.basename(src)
+            dest = os.path.join(new_template_dir, filename)
+            os.mkdir(new_template_dir)
+        else:
+            dest = os.path.join(new_template_dir, name)
+
+        clone_status = clone_function['execute'](src, dest)
+        if clone_status['is_successful']:
+
+            message = InfoMessage('template_created', template_name=name)
+            is_successful = True
+        else:
+            message = ErrorMessage('create_template', template_name=name)
+            is_successful = False
+
+    return dict(is_successful=is_successful, msg=message.get_message())
 
 def clone_template(dest, name, clone_name, path_function, template_folder):
     """Clones a template
@@ -72,20 +88,35 @@ def clone_template(dest, name, clone_name, path_function, template_folder):
         template_folder (str): the path of the templates directory
 
     Returns:
-        dict: indicates the status, an error if present, and the template name
+        dict: indicates the status of the clone operation and a message
 
     """
 
-    template_path = os.path.join(template_folder, name)
-    destination_path = os.path.join(dest, clone_name)
+    message = None
+    is_successful = None
+    message_kwargs = dict(template_name=name)
+
+    src = os.path.join(template_folder, name)
+    dest = os.path.join(dest, clone_name)
 
     if not get_template(name, template_folder):
-        message = ErrorMessage('template_missing', template_name=name)
-        return dict(isSuccessful=False, msg=message.get_message())
+        message = ErrorMessage('template_missing', **message_kwargs)
+        is_successful = False
 
-    path_function["execute"](template_path, destination_path)
-    message = InfoMessage('template_cloned', path=dest, template_name=name)
-    return dict(isSuccessful=True, msg=message.get_message())
+    if is_successful is not False:
+        clone_status = path_function["execute"](src, dest)
+        if clone_status['is_successful']:
+            message = InfoMessage('template_cloned', path=dest,
+                                  **message_kwargs)
+            is_successful = True
+
+        else:
+            message = ErrorMessage('clone_template', **message_kwargs)
+            is_successful = False
+
+    return dict(is_successful=is_successful, msg=message.get_message())
+
+
 
 def get_templates(template_folder, search_term=''):
     """Returns all templates filtered by the search term
@@ -108,12 +139,26 @@ def remove_template(template_name, template_folder):
         template_name (str): The name of the template to delete
         template_folder (str): the path of the templates directory
 
+    Returns:
+        dict: indicates the status of the remove operation and a message
+
     """
 
-    if get_template(template_name, template_folder):
-        delete_template(template_name, template_folder)
-        message = InfoMessage('template_deleted', template_name=template_name)
-        return dict(isSuccessful=True, msg=message.get_message())
+    is_successful = None
+    message = None
+    message_kwargs = dict(template_name=template_name)
 
-    message = ErrorMessage('template_missing', template_name=template_name)
-    return dict(isSuccessful=False, msg=message.get_message())
+    if get_template(template_name, template_folder):
+        delete_status = delete_template(template_name, template_folder)
+
+        if delete_status['is_successful']:
+            message = InfoMessage('template_deleted', **message_kwargs)
+            is_successful = True
+        else:
+            message = ErrorMessage('delete_template', **message_kwargs)
+            is_successful = False
+    else:
+        message = ErrorMessage('template_missing', **message_kwargs)
+        is_successful = False
+
+    return dict(is_successful=is_successful, msg=message.get_message())

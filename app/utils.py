@@ -2,31 +2,53 @@
 
 import shutil
 import os
-from app.errors import ScaffoldError, PathNotFoundError
 from app.messages import ErrorMessage
 
 
 def clone_directory(src, dest):
-    """Clones a directory from the source to the destination"""
+    """Clones a directory from the source to the destination
+
+    Returns:
+        dict: indicates whether the clone operation threw an error
+
+    """
+
     try:
         shutil.copytree(src, dest, symlinks=True)
-    except OSError as err:
-        raise ScaffoldError(err)
+        return {'is_successful': True}
+
+    except OSError:
+        return {'is_successful': False}
 
 def clone_file(src, dest):
-    """Clones a file from the source to the destination"""
+    """Clones a file from the source to the destination
+
+    Returns:
+        dict: indicates whether the clone operation threw an error
+
+    """
+
     try:
         shutil.copy(src, dest)
-    except OSError as err:
-        raise ScaffoldError(err)
+        return {'is_successful': True}
+
+    except OSError:
+        return {'is_successful': False}
 
 def delete_template(name, path):
-    """Deletes a directory"""
+    """Deletes a template
+
+    Returns:
+        dict: indicates whether the delete operation threw an error
+
+    """
     directory = os.path.join(path, name)
     try:
         shutil.rmtree(directory)
-    except OSError as err:
-        raise ScaffoldError(directory)
+        return {'is_successful': True}
+
+    except OSError:
+        return {'is_successful': False}
 
 def get_template(name, path):
     """Retrieves the path of the template.
@@ -38,8 +60,8 @@ def get_template(name, path):
         name (str): The name of the template.
 
     Returns:
-        template_path (str): the path of the template if it exists.
-        False (Bool): if the template doesn't exist.
+        str: the path of the template if it exists.
+        bool: False if the template doesn't exist.
 
     """
 
@@ -55,17 +77,18 @@ def get_clone_function(path):
         path (str): the path to retrieve the clone function for
 
     Returns:
-        (dict): contains whether the operation was successful, the path type,
-            and a reference to the appropriate clone function
+        (dict): if successful, contains the operation status, the path type,
+            and a reference to the appropriate clone function. If
+            unsuccessful, returns the operation status and a message
 
     """
 
     if os.path.isfile(path):
-        return {'isSuccessful': True, "type": "file", "execute": clone_file}
+        return {'is_successful': True, "type": "file", "execute": clone_file}
 
     if os.path.isdir(path):
-        return {'isSuccessful': True, 'type': 'directory',
+        return {'is_successful': True, 'type': 'directory',
                 'execute': clone_directory}
 
     message = ErrorMessage('directory_missing', path=path)
-    return {'isSuccessful': False, 'msg':message.get_message()}
+    return {'is_successful': False, 'msg': message.get_message()}
